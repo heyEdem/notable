@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo App</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Todo List</h1>
+    <a href="/create" class="btn">Add New Todo</a>
+    <table>
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Completed</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="todo : ${todos}">
+            <td th:text="${todo.title}"></td>
+            <td th:text="${todo.description}"></td>
+            <td th:text="${todo.completed} ? 'Yes' : 'No'"></td>
+            <td>
+                <a th:href="@{/edit/{id}(id=${todo.id})}" class="btn btn-edit">Edit</a>
+                <a th:href="@{/delete/{id}(id=${todo.id})}" class="btn btn-delete">Delete</a>
+            </td>
+        </tr>
+        <tr th:if="${todos.isEmpty()}">
+            <td colspan="4">No todos found.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
