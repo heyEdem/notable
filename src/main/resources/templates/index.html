@@ -4,35 +4,224 @@
     <meta charset="UTF-8">
     <title>Todo App</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: #e6f3fa;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            gap: 10px;
+        }
+
+        .sidebar-item.active {
+            background-color: #e1e1e1;
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-count {
+            margin-left: auto;
+            background-color: #e1e1e1;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .completed-icon {
+            background-color: #4cd964;
+            border-radius: 4px;
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .greeting {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .date {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .task-input {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .task-input input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: transparent;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .task-input input:focus {
+            outline: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+
+        .checkbox.checked {
+            background-color: #4cd964;
+            border-color: #4cd964;
+        }
+
+        .task-title {
+            flex: 1;
+            font-size: 16px;
+        }
+
+        .create-list {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: auto;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h1>Todo List</h1>
-    <a href="/create" class="btn">Add New Todo</a>
-    <table>
-        <thead>
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Completed</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="todo : ${todos}">
-            <td th:text="${todo.title}"></td>
-            <td th:text="${todo.description}"></td>
-            <td th:text="${todo.completed} ? 'Yes' : 'No'"></td>
-            <td>
-                <a th:href="@{/edit/{id}(id=${todo.id})}" class="btn btn-edit">Edit</a>
-                <a th:href="@{/delete/{id}(id=${todo.id})}" class="btn btn-delete">Delete</a>
-            </td>
-        </tr>
-        <tr th:if="${todos.isEmpty()}">
-            <td colspan="4">No todos found.</td>
-        </tr>
-        </tbody>
-    </table>
+<div class="sidebar">
+    <div class="sidebar-item active">
+        <div class="sidebar-icon">□</div>
+        <span>Home</span>
+        <span class="sidebar-count">2</span>
+    </div>
+    <div class="sidebar-item">
+        <div class="sidebar-icon completed-icon">✓</div>
+        <span>Completed</span>
+        <span class="sidebar-count">10</span>
+    </div>
+    <div class="sidebar-item">
+        <div class="sidebar-icon">□</div>
+        <span>Etonote</span>
+        <span class="sidebar-count">0</span>
+    </div>
+    <div class="sidebar-item">
+        <div class="sidebar-icon">□</div>
+        <span>Life of Pablo</span>
+        <span class="sidebar-count">0</span>
+    </div>
+    <div class="create-list">
+        <div class="sidebar-icon">+</div>
+        <span>Create new list</span>
+    </div>
 </div>
+
+<div class="main-content">
+    <div class="header">
+        <div>
+            <h2 class="greeting" th:text="${'Good Afternoon, ' + (username ?: 'User')}">Good Afternoon, heyEdem</h2>
+            <p class="date" th:text="${#dates.format(#dates.createNow(), 'EEEE, MMM d')}">It's Wednesday, Apr 2</p>
+        </div>
+    </div>
+
+    <div class="task-input">
+        <input type="text" placeholder="Write a new task">
+    </div>
+
+    <div class="task-list" th:if="${!todos.isEmpty()}">
+        <div class="task-item" th:each="todo : ${todos}">
+            <div class="checkbox" th:classappend="${todo.completed} ? 'checked' : ''"></div>
+            <span class="task-title" th:text="${todo.title}">Nothing</span>
+            <div class="task-actions">
+                <a th:href="@{/edit/{id}(id=${todo.id})}" class="edit-action">🖊️</a>
+                <a th:href="@{/delete/{id}(id=${todo.id})}" class="delete-action">🗑️</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Example tasks based on the image -->
+    <div class="task-item" th:if="${todos.isEmpty()}">
+        <div class="checkbox"></div>
+        <span class="task-title">Nothing</span>
+    </div>
+    <div class="task-item" th:if="${todos.isEmpty()}">
+        <div class="checkbox"></div>
+        <span class="task-title">SQL</span>
+    </div>
+</div>
+
+<script>
+    // Optional JavaScript to handle checkbox toggling
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.classList.toggle('checked');
+                // You would typically send an AJAX request here to update the completed status
+            });
+        });
+    });
+</script>
 </body>
 </html>
