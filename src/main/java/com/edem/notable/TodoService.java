@@ -52,20 +52,11 @@ public class TodoService {
     public List<Todo> getAllTodos() {
         ScanRequest request = ScanRequest.builder()
                 .tableName(TABLE_NAME)
+                .filterExpression("completed = :val")
+                .expressionAttributeValues(Map.of(":val", AttributeValue.builder().bool(false).build()))
                 .build();
         ScanResponse response = dynamoDbClient.scan(request);
-        List<Todo> todos = new ArrayList<>();
-
-        for (Map<String, AttributeValue> item : response.items()) {
-            Todo todo = Todo.builder()
-                    .id(Long.parseLong(item.get("id").n()))
-                    .title(item.get("title").s())
-                    .description(item.get("description").s())
-                    .completed(item.get("completed").bool())
-                    .build();
-            todos.add(todo);
-        }
-        return todos;
+        return mapToTodos(response.items());
 
     }
 

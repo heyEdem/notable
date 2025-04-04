@@ -79,7 +79,7 @@
         .greeting h1 {
             font-size: 28px;
             font-weight: 600;
-            color: #3a3b3c;
+            color: #0984e3;
         }
 
         .greeting p {
@@ -89,6 +89,7 @@
 
         .task-input {
             background: white;
+            padding: 15px;
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             width: 100%;
@@ -159,6 +160,7 @@
         .task-title {
             font-size: 14px;
             font-weight: 500;
+            transition: text-decoration 0.3s ease;
         }
 
         .task-title.completed {
@@ -277,7 +279,7 @@
     <div class="task-list" th:if="${todos.isEmpty()}">
         <div class="task-item">
             <div class="checkbox"></div>
-            <span class="task-title">No tasks yet - add one above!</span>
+            <span class="task-title" th:text="${view == 'home' ? 'No uncompleted tasks - add one above!' : 'No completed tasks yet!'}">No tasks yet</span>
         </div>
     </div>
 </div>
@@ -292,17 +294,33 @@
             }
         });
 
-        // Checkbox toggle
+        // Checkbox toggle with animation
         const checkboxes = document.querySelectorAll('.checkbox');
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
                 const isChecked = this.classList.contains('checked');
-                fetch(`/${id}/toggle`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ completed: !isChecked })
-                }).then(() => location.reload());
+                const taskTitle = this.parentElement.querySelector('.task-title');
+
+                // Toggle local UI immediately
+                if (!isChecked) {
+                    this.classList.add('checked');
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    taskTitle.classList.add('completed');
+                } else {
+                    this.classList.remove('checked');
+                    this.innerHTML = '';
+                    taskTitle.classList.remove('completed');
+                }
+
+                // Delay server update to show animation
+                setTimeout(() => {
+                    fetch(`/${id}/toggle`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ completed: !isChecked })
+                    }).then(() => location.reload());
+                }, 500); // 500ms delay for animation
             });
         });
 
@@ -347,17 +365,34 @@
             });
         });
 
-        // Toggle from dropdown
+        // Toggle from dropdown with animation
         const toggleItems = document.querySelectorAll('.dropdown-item.toggle');
         toggleItems.forEach(item => {
             item.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
-                const isChecked = document.querySelector(`.checkbox[data-id="${id}"]`).classList.contains('checked');
-                fetch(`/${id}/toggle`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ completed: !isChecked })
-                }).then(() => location.reload());
+                const checkbox = document.querySelector(`.checkbox[data-id="${id}"]`);
+                const isChecked = checkbox.classList.contains('checked');
+                const taskTitle = checkbox.parentElement.querySelector('.task-title');
+
+                // Toggle local UI immediately
+                if (!isChecked) {
+                    checkbox.classList.add('checked');
+                    checkbox.innerHTML = '<i class="fas fa-check"></i>';
+                    taskTitle.classList.add('completed');
+                } else {
+                    checkbox.classList.remove('checked');
+                    checkbox.innerHTML = '';
+                    taskTitle.classList.remove('completed');
+                }
+
+                // Delay server update to show animation
+                setTimeout(() => {
+                    fetch(`/${id}/toggle`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ completed: !isChecked })
+                    }).then(() => location.reload());
+                }, 500); // 500ms delay for animation
             });
         });
     });
