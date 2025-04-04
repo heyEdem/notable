@@ -18,67 +18,22 @@ public class TodoService {
 
     private final DynamoDbClient dynamoDbClient;
 
-    private static final String TABLE_NAME = "TodoItems";
-    private static final String COUNTER_TABLE_NAME = "Counters";
+    private static final String TABLE_NAME = "Notable";
+
 
     @PostConstruct
     public void init() {
         try {
-            dynamoDbClient.describeTable(DescribeTableRequest.builder().tableName(COUNTER_TABLE_NAME).build());
+            dynamoDbClient.describeTable(DescribeTableRequest.builder().tableName(TABLE_NAME).build());
         } catch (ResourceNotFoundException e) {
-            CreateTableRequest request = CreateTableRequest.builder()
-                    .tableName(COUNTER_TABLE_NAME)
-                    .attributeDefinitions(
-                            AttributeDefinition.builder()
-                                    .attributeName("counter_name")
-                                    .attributeType(ScalarAttributeType.S)
-                                    .build()
-                    )
-                    .keySchema(
-                            KeySchemaElement.builder()
-                                    .attributeName("counter_name")
-                                    .keyType(KeyType.HASH)
-                                    .build()
-                    )
-                    .billingMode(BillingMode.PAY_PER_REQUEST)
-                    .build();
-            dynamoDbClient.createTable(request);
-            dynamoDbClient.waiter().waitUntilTableExists(DescribeTableRequest.builder().tableName(COUNTER_TABLE_NAME).build());
-
-            // Initialize the counter
-            Map<String, AttributeValue> item = new HashMap<>();
-            item.put("counter_name", AttributeValue.builder().s("todo_id").build());
-            item.put("value", AttributeValue.builder().n("0").build());
-            PutItemRequest initCounter = PutItemRequest.builder()
-                    .tableName(COUNTER_TABLE_NAME)
-                    .item(item)
-                    .build();
-            dynamoDbClient.putItem(initCounter);
+            throw new RuntimeException("DynamoDB table "+ TABLE_NAME+ " not found", e);
         }
-    }
-
-    // Get the next ID from the counter
-    private Long getNextId() {
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("counter_name", AttributeValue.builder().s("todo_id").build());
-
-        UpdateItemRequest request = UpdateItemRequest.builder()
-                .tableName(COUNTER_TABLE_NAME)
-                .key(key)
-                .updateExpression("SET #val = #val + :incr")
-                .expressionAttributeNames(Map.of("#val", "value"))
-                .expressionAttributeValues(Map.of(":incr", AttributeValue.builder().n("1").build()))
-                .returnValues(ReturnValue.UPDATED_NEW)
-                .build();
-
-        UpdateItemResponse response = dynamoDbClient.updateItem(request);
-        return Long.parseLong(response.attributes().get("value").n());
     }
 
     // Create a Todo item
     public void createTodo(Todo todo) {
         Map<String, AttributeValue> item = new HashMap<>();
-        Long id = getNextId(); // Get the next ID from the counter
+        Long id = System.currentTimeMillis();
         item.put("id", AttributeValue.builder().n(id.toString()).build());
         item.put("title", AttributeValue.builder().s(todo.getTitle()).build());
         item.put("description", AttributeValue.builder().s(todo.getDescription()).build());
@@ -102,14 +57,16 @@ public class TodoService {
         List<Todo> todos = new ArrayList<>();
 
         for (Map<String, AttributeValue> item : response.items()) {
-            Todo todo = new Todo();
-            todo.setId(Long.parseLong(item.get("id").n()));
-            todo.setTitle(item.get("title").s());
-            todo.setDescription(item.get("description").s());
-            todo.setCompleted(Boolean.parseBoolean(item.get("completed").bool().toString()));
+            Todo todo = Todo.builder()
+                    .id(Long.parseLong(item.get("id").n()))
+                    .title(item.get("title").s())
+                    .description(item.get("description").s())
+                    .completed(item.get("completed").bool())
+                    .build();
             todos.add(todo);
         }
         return todos;
+
     }
 
     // Read a single Todo item by ID
@@ -128,13 +85,39 @@ public class TodoService {
         }
 
         Map<String, AttributeValue> item = response.item();
-        Todo todo = new Todo();
-        todo.setId(Long.parseLong(item.get("id").n()));
-        todo.setTitle(item.get("title").s());
-        todo.setDescription(item.get("description").s());
-        todo.setCompleted(Boolean.parseBoolean(item.get("completed").bool().toString()));
-        return todo;
+        return Todo.builder()
+                .id(Long.parseLong(item.get("id").n()))
+                .title(item.get("title").s())
+                .description(item.get("description").s())
+                .completed(item.get("completed").bool())
+                .build();
     }
+
+    // New method for completed todos
+    public List<Todo> getCompletedTodos() {
+        ScanRequest request = ScanRequest.builder()
+                .tableName(TABLE_NAME)
+                .filterExpression("completed = :val")
+                .expressionAttributeValues(Map.of(":val", AttributeValue.builder().bool(true).build()))
+                .build();
+        ScanResponse response = dynamoDbClient.scan(request);
+        return mapToTodos(response.items());
+    }
+
+    private List<Todo> mapToTodos(List<Map<String, AttributeValue>> items) {
+        List<Todo> todos = new ArrayList<>();
+        for (Map<String, AttributeValue> item : items) {
+            Todo todo = Todo.builder()
+                    .id(Long.parseLong(item.get("id").n()))
+                    .title(item.get("title").s())
+                    .description(item.get("description").s())
+                    .completed(item.get("completed").bool())
+                    .build();
+            todos.add(todo);
+        }
+        return todos;
+    }
+
 
     // Update a Todo item
     public void updateTodo(Todo todo) {
@@ -162,6 +145,8 @@ public class TodoService {
                 .build();
         dynamoDbClient.updateItem(request);
     }
+
+
 
     // Delete a Todo item
     public void deleteTodo(Long id) {

@@ -2,42 +2,54 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Todo App</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>Notable - Todo App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: 'Poppins', sans-serif;
         }
 
         body {
             display: flex;
-            background-color: #e6f3fa;
-            height: 100vh;
+            background: linear-gradient(135deg, #d1e8ff, #e9f7ff);
+            min-height: 100vh;
+            color: #2d3436;
         }
 
         .sidebar {
-            width: 250px;
-            background-color: #f0f0f0;
+            width: 220px;
+            background: rgba(255, 255, 255, 0.95);
             padding: 20px;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
         }
 
         .sidebar-item {
             display: flex;
             align-items: center;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             cursor: pointer;
-            gap: 10px;
+            gap: 8px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: #f1f2f6;
+            transform: translateX(5px);
         }
 
         .sidebar-item.active {
-            background-color: #e1e1e1;
+            background: #0984e3;
+            color: white;
         }
 
         .sidebar-icon {
@@ -46,179 +58,306 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .sidebar-count {
-            margin-left: auto;
-            background-color: #e1e1e1;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .completed-icon {
-            background-color: #4cd964;
-            border-radius: 4px;
-            color: white;
+            font-size: 16px;
         }
 
         .main-content {
             flex: 1;
-            padding: 20px 40px;
+            margin-left: 220px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
+            gap: 20px;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
         }
 
         .greeting {
-            font-size: 18px;
-            font-weight: 500;
-            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
         }
 
-        .date {
-            color: #999;
+        .greeting h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #3a3b3c;
+        }
+
+        .greeting p {
             font-size: 14px;
+            color: #636e72;
         }
 
         .task-input {
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
         }
 
         .task-input input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: none;
-            background-color: transparent;
+            border-radius: 8px;
             font-size: 16px;
-            color: #333;
+            background: #f1f2f6;
+            transition: box-shadow 0.3s;
         }
 
         .task-input input:focus {
             outline: none;
+            box-shadow: 0 0 5px rgba(9, 132, 227, 0.5);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
         }
 
         .task-item {
             display: flex;
             align-items: center;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+            font-size: 14px;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
         }
 
         .checkbox {
             width: 20px;
             height: 20px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            margin-right: 15px;
+            border: 2px solid #b2bec3;
+            border-radius: 50%;
+            margin-right: 12px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
         }
 
         .checkbox.checked {
-            background-color: #4cd964;
-            border-color: #4cd964;
+            background: #00b894;
+            border-color: #00b894;
+            color: white;
+        }
+
+        .task-content {
+            flex: 1;
         }
 
         .task-title {
-            flex: 1;
-            font-size: 16px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        .create-list {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: auto;
-            padding: 8px 12px;
+        .task-title.completed {
+            text-decoration: line-through;
+            color: #636e72;
+        }
+
+        .task-edit {
+            display: none;
+            width: 100%;
+        }
+
+        .task-edit input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #dfe6e9;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .task-edit input:focus {
+            border-color: #0984e3;
+            outline: none;
+        }
+
+        .more-menu {
+            position: relative;
             cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .more-icon {
+            font-size: 16px;
+            padding: 5px;
+            color: #636e72;
+        }
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            min-width: 100px;
+            z-index: 10;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #2d3436;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #f1f2f6;
+        }
+
+        .dropdown-item.delete {
+            color: #ff4757;
         }
     </style>
 </head>
 <body>
 <div class="sidebar">
-    <div class="sidebar-item active">
-        <div class="sidebar-icon">□</div>
+    <a th:href="@{/home}" class="sidebar-item" th:classappend="${view == 'home' ? 'active' : ''}">
+        <div class="sidebar-icon"><i class="fas fa-home"></i></div>
         <span>Home</span>
-        <span class="sidebar-count">2</span>
-    </div>
-    <div class="sidebar-item">
-        <div class="sidebar-icon completed-icon">✓</div>
+    </a>
+    <a th:href="@{/completed}" class="sidebar-item" th:classappend="${view == 'completed' ? 'active' : ''}">
+        <div class="sidebar-icon"><i class="fas fa-check-circle"></i></div>
         <span>Completed</span>
-        <span class="sidebar-count">10</span>
-    </div>
-    <div class="sidebar-item">
-        <div class="sidebar-icon">□</div>
-        <span>Etonote</span>
-        <span class="sidebar-count">0</span>
-    </div>
-    <div class="sidebar-item">
-        <div class="sidebar-icon">□</div>
-        <span>Life of Pablo</span>
-        <span class="sidebar-count">0</span>
-    </div>
-    <div class="create-list">
-        <div class="sidebar-icon">+</div>
-        <span>Create new list</span>
-    </div>
+    </a>
 </div>
 
 <div class="main-content">
-    <div class="header">
-        <div>
-            <h2 class="greeting" th:text="${'Good Afternoon, ' + (username ?: 'User')}">Good Afternoon, heyEdem</h2>
-            <p class="date" th:text="${#dates.format(#dates.createNow(), 'EEEE, MMM d')}">It's Wednesday, Apr 2</p>
-        </div>
+    <div class="greeting">
+        <h1 th:text="${#dates.format(#dates.createNow(), 'a') == 'AM' ? 'Good Morning' : 'Good Afternoon'}">Good Morning</h1>
+        <p th:text="'It\'s ' + ${#dates.format(#dates.createNow(), 'EEEE, MMMM d')}">It's Saturday, April 5</p>
     </div>
 
     <div class="task-input">
-        <input type="text" placeholder="Write a new task">
+        <form th:action="@{/create}" th:method="post" id="createForm">
+            <input type="text" name="title" placeholder="Add a new task..." required>
+            <input type="hidden" name="description" value="">
+            <input type="hidden" name="completed" value="false">
+        </form>
     </div>
 
     <div class="task-list" th:if="${!todos.isEmpty()}">
         <div class="task-item" th:each="todo : ${todos}">
-            <div class="checkbox" th:classappend="${todo.completed} ? 'checked' : ''"></div>
-            <span class="task-title" th:text="${todo.title}">Nothing</span>
-            <div class="task-actions">
-                <a th:href="@{/edit/{id}(id=${todo.id})}" class="edit-action">🖊️</a>
-                <a th:href="@{/delete/{id}(id=${todo.id})}" class="delete-action">🗑️</a>
+            <div class="checkbox" th:classappend="${todo.completed} ? 'checked' : ''" th:data-id="${todo.id}">
+                <i class="fas fa-check" th:if="${todo.completed}"></i>
+            </div>
+            <div class="task-content">
+                <span class="task-title" th:classappend="${todo.completed} ? 'completed' : ''" th:text="${todo.title}">Nothing</span>
+                <form th:action="@{/edit/{id}(id=${todo.id})}" th:method="post" class="task-edit" th:id="'edit-' + ${todo.id}">
+                    <input type="text" name="title" th:value="${todo.title}" required>
+                    <input type="hidden" name="description" th:value="${todo.description}">
+                    <input type="hidden" name="completed" th:value="${todo.completed}">
+                </form>
+            </div>
+            <div class="more-menu">
+                <i class="fas fa-ellipsis-h more-icon"></i>
+                <div class="dropdown">
+                    <div class="dropdown-item edit" th:data-id="${todo.id}">Edit</div>
+                    <div class="dropdown-item delete" th:href="@{/delete/{id}(id=${todo.id})}">Delete</div>
+                    <div class="dropdown-item toggle" th:data-id="${todo.id}">Mark as <span th:text="${todo.completed ? 'Incomplete' : 'Complete'}"></span></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Example tasks based on the image -->
-    <div class="task-item" th:if="${todos.isEmpty()}">
-        <div class="checkbox"></div>
-        <span class="task-title">Nothing</span>
-    </div>
-    <div class="task-item" th:if="${todos.isEmpty()}">
-        <div class="checkbox"></div>
-        <span class="task-title">SQL</span>
+    <div class="task-list" th:if="${todos.isEmpty()}">
+        <div class="task-item">
+            <div class="checkbox"></div>
+            <span class="task-title">No tasks yet - add one above!</span>
+        </div>
     </div>
 </div>
 
 <script>
-    // Optional JavaScript to handle checkbox toggling
     document.addEventListener('DOMContentLoaded', function() {
+        // Submit on Enter
+        const input = document.querySelector('.task-input input');
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('createForm').submit();
+            }
+        });
+
+        // Checkbox toggle
         const checkboxes = document.querySelectorAll('.checkbox');
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('click', function() {
-                this.classList.toggle('checked');
-                // You would typically send an AJAX request here to update the completed status
+                const id = this.getAttribute('data-id');
+                const isChecked = this.classList.contains('checked');
+                fetch(`/${id}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: !isChecked })
+                }).then(() => location.reload());
+            });
+        });
+
+        // Dropdown menu
+        const moreMenus = document.querySelectorAll('.more-menu');
+        moreMenus.forEach(menu => {
+            const icon = menu.querySelector('.more-icon');
+            const dropdown = menu.querySelector('.dropdown');
+            icon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!menu.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        });
+
+        // Edit inline
+        const editItems = document.querySelectorAll('.dropdown-item.edit');
+        editItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const title = document.querySelector(`.task-item [data-id="${id}"]`).parentElement.querySelector('.task-title');
+                const editForm = document.getElementById(`edit-${id}`);
+                title.style.display = 'none';
+                editForm.style.display = 'block';
+                editForm.querySelector('input[name="title"]').focus();
+
+                editForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    this.submit();
+                });
+
+                editForm.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        this.submit();
+                    }
+                });
+            });
+        });
+
+        // Toggle from dropdown
+        const toggleItems = document.querySelectorAll('.dropdown-item.toggle');
+        toggleItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const isChecked = document.querySelector(`.checkbox[data-id="${id}"]`).classList.contains('checked');
+                fetch(`/${id}/toggle`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ completed: !isChecked })
+                }).then(() => location.reload());
             });
         });
     });
