@@ -48,7 +48,7 @@
         }
 
         .sidebar-item.active {
-            background: #0984e3;
+            background: #0c334e;
             color: white;
         }
 
@@ -165,7 +165,7 @@
 
         .task-title.completed {
             text-decoration: line-through;
-            color: #636e72;
+            color: #636572;
         }
 
         .task-edit {
@@ -234,7 +234,7 @@
     </a>
     <a th:href="@{/completed}" class="sidebar-item" th:classappend="${view == 'completed' ? 'active' : ''}">
         <div class="sidebar-icon"><i class="fas fa-check-circle"></i></div>
-        <span>Completed</span>
+        <span>Completed Tasks</span>
     </a>
 </div>
 
