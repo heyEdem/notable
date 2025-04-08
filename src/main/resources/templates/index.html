@@ -269,7 +269,7 @@
                 <i class="fas fa-ellipsis-h more-icon"></i>
                 <div class="dropdown">
                     <div class="dropdown-item edit" th:data-id="${todo.id}">Edit</div>
-                    <div class="dropdown-item delete" th:href="@{/delete/{id}(id=${todo.id})}">Delete</div>
+                    <a class="dropdown-item delete" th:href="@{/delete/{id}(id=${todo.id})}">Delete</a>
                     <div class="dropdown-item toggle" th:data-id="${todo.id}">Mark as <span th:text="${todo.completed ? 'Incomplete' : 'Complete'}"></span></div>
                 </div>
             </div>
